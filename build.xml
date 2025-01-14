@@ -94,9 +94,9 @@
     </java>
   </target>
 
-  <target name="compile-tests" 
+  <target name="compile-tests"
           description="Compile the subset of tests that require compilation."
-          unless="maven.test.skip">
+          >
     <mkdir dir="${test-classes}"/>
     <javac srcdir="${jtestsrc}" destdir="${test-classes}" includeJavaRuntime="yes"
            debug="true" source="1.8" target="1.8" includeantruntime="no"/>
@@ -121,6 +121,7 @@
           description="Run clojure tests without recompiling clojure."
           depends="compile-tests"
           unless="maven.test.skip">
+  <echo>Test Command: java -cp ${maven.test.classpath}:${test-classes}:${test} -Dclojure.test-clojure.exclude-namespaces='#{clojure.test-clojure.compilation.load-ns clojure.test-clojure.ns-libs-load-later}' -Dclojure.compiler.direct-linking=${directlinking} clojure.main ${test-script}</echo>
     <java classname="clojure.main" failonerror="true" fork="true">
       <sysproperty key="clojure.test-clojure.exclude-namespaces"
                    value="#{clojure.test-clojure.compilation.load-ns clojure.test-clojure.ns-libs-load-later}"/>
@@ -129,9 +130,7 @@
         <pathelement path="${maven.test.classpath}"/>
         <path location="${test-classes}"/>
         <path location="${test}"/>
-        <path location="${build}"/>
-	<path location="${cljsrc}"/>
-      </classpath>
+       </classpath>
       <arg value="${test-script}"/>
     </java>
   </target>
@@ -146,8 +145,6 @@
         <pathelement path="${maven.test.classpath}"/>
         <path location="${test-classes}"/>
         <path location="${test}"/>
-        <path location="${build}"/>
-	<path location="${cljsrc}"/>
       </classpath>
       <arg value="${test-generative-script}"/>
     </java>
@@ -159,7 +156,7 @@
 
   <target name="build"
           description="Build Clojure (compilation only, no tests)."
-          depends="compile-java, compile-clojure"/>
+          depends="compile-java, compile-clojure, compile-tests"/>
 
   <target name="jar" depends="build"
           description="Create clojure jar file.">
