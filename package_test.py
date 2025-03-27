@@ -9,7 +9,7 @@ import stat
 def taie_trans(original, target):
     current_dir = p.dirname(p.realpath(__file__))
     app_dir = p.join(p.dirname(p.dirname(current_dir)), 'app')
-    subprocess.run(f"gradle taieTrans --args='{original} {target}'", shell=True, cwd=app_dir)
+    subprocess.run(f"gradle taieTrans --args='{original} {target} 1.8'", shell=True, cwd=app_dir)
 
 def relative_cp(root, cp):
     return [ p.relpath(i, start=root) for i in cp ]
