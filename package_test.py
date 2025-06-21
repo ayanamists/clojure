@@ -14,13 +14,13 @@ def taie_trans(original, target):
 def relative_cp(root, cp):
     return [ p.relpath(i, start=root) for i in cp ]
 
-def write_runfile(root, path, cp):
+def write_runfile(root, path, cp, header):
     props = "'-Dclojure.test-clojure.exclude-namespaces=#{clojure.test-clojure.compilation.load-ns clojure.test-clojure.ns-libs-load-later}' -Dclojure.compiler.direct-linking=true"
     cp_str = ':'.join(relative_cp(root, cp))
     test_command1 = f"java -cp {cp_str} {props} clojure.main src/script/run_test.clj"
     test_command2 = f"java -cp {cp_str} {props} clojure.main src/script/run_test_generative.clj"
     with open(path, 'w+') as f:
-        f.writelines([test_command1, '\n', test_command2])
+        f.writelines([header, '\n', test_command1, '\n', test_command2])
 
     st = os.stat(path)
     os.chmod(path, st.st_mode | stat.S_IEXEC)
@@ -52,10 +52,12 @@ test_cp.append(shutil.copytree(p.join(current_dir, 'test'), p.join(tmp_dir, 'tes
 shutil.copy(p.join(current_dir, 'readme.txt'), tmp_dir)
 
 taie_trans(p.join(tmp_dir, 'clojure.jar'), p.join(tmp_dir, 'clojure-taie-trans.jar'))
-write_runfile(tmp_dir, p.join(tmp_dir, 'run_original.sh'), test_cp)
+write_runfile(tmp_dir, p.join(tmp_dir, 'run_original.sh'), test_cp,
+    'echo "--- (Output from the original run) ---"')
 test_taie_cp = [i for i in test_cp]
 test_taie_cp[0] = p.join(tmp_dir, 'clojure-taie-trans.jar')
-write_runfile(tmp_dir, p.join(tmp_dir, 'run_taie_trans.sh'), test_taie_cp)
+write_runfile(tmp_dir, p.join(tmp_dir, 'run_taie_trans.sh'), test_taie_cp,
+    'echo "--- (Output from the taie-trans run) ---"')
 
 subprocess.run(['tree', tmp_dir, '-L', '2'])
 subprocess.run(['zip', '-r', 'test.zip', '.'], cwd=tmp_dir)
